@@ -1,0 +1,43 @@
+db:
+  image: mongo
+#  volumes:
+#    - ./data/runtime/db:/data/db
+#    - ./data/dump:/dump
+  command: mongod --smallfiles --oplogSize 128
+
+rc:
+  image: rocketchat/rocket.chat
+#  volumes:
+#    - ./uploads:/app/uploads
+  environment:
+    - MONGO_URL=mongodb://db:27017/rocketchat
+    - ROOT_URL=http://localhost:8818
+#    - PORT=3000
+  links:
+    - db:db
+  ports:
+    - 8818:3000
+
+hb:
+#  image: rocketchat/hubot-rocketchat:v0.1.4
+  image: rocketchat/hubot-rocketchat
+  links:
+    - rc:rc
+  environment:
+   -  ROCKETCHAT_URL=rc:3000
+   -  ROCKETCHAT_ROOM=
+   -  ROCKETCHAT_AUTH=password
+   -  ROCKETCHAT_USER=bot
+   -  ROCKETCHAT_PASSWORD=bot
+   -  BOT_NAME=bbot
+   -  LISTEN_ON_ALL_PUBLIC=true
+#   -  EXTERNAL_SCRIPTS=hubot-pugme,hubot-help
+   -  EXTERNAL_SCRIPTS=hubot-seen,hubot-help,hubot-links,hubot-diagnostics
+#   -  GOOGLE_API_KEY=yourgoogleapikey
+#,hubot-seen,hubot-links,hubot-diagnostics,hubot-google,hubot-reddit,hubot-bofh,hubot-bookmark,hubot-shipit,hubot-maps
+# this is used to expose the hubot port for notifications on the host on port 3001, e.g. for hubot-jenkins-notifier
+  ports:
+    - 3001:8080
+
+# you can add more scripts as you'd like here, they need to be installable by npm
+
